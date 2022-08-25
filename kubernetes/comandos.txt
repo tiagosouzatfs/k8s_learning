@@ -1,0 +1,71 @@
+Kubernetes - ferramenta de orquestração de containers criado pelo google
+permite a criação de múltiplos containers em diferentes máquinas (nodes)
+escalando projetos e formando clusters. Abreviação de kubernetes - k8s
+
+Conceitos fundamentais
+Control Plane: Gerenciador que controla os processos no nodes
+Nodes: Máquinas que são gerenciadas pelo Control Plane
+Deployment: Execução de uma imagem/projeto em um pod
+Pod: um ou mais conteiners que estão em um node
+Services: Serviços que expõe os Pods ao mundo externo
+kubectl: Cliente de linha de comando para o Kubernetes
+
+Documentação kubernetes - https://kubernetes.io/docs/home/
+
+versão do kubernetes -> kubectl version
+
+Documentação Minikube - https://minikube.sigs.k8s.io/docs/start/
+
+O Minikube é uma implementação leve do Kubernetes que cria uma 
+VM em sua máquina local e implanta um cluster simples contendo 
+apenas um nó.
+
+Versão minikube -> minikube version
+
+Inicializando o minikube -> minikube start --driver=docker
+o driver é o 'sistema de virtualização' será utilizado
+para criar o kluster kubernetes, ele pode ser o docker,
+virtualbox e hyperv.
+
+Para verificar se o minikube iniciou corretamente pode-se usar
+-> minikube status
+
+Parando o minikube -> minikube stop (obs: todas às vezes que 
+tivermos que reiniciar o pc, desligando e ligando novamente
+o sistema operacional, teremos que iniciar o minikube)
+
+O minikube tem uma ferramenta gráfica para gerência do kubernetes, com o
+comando -> minikube dashboard (ele ocupa o terminal para poder abrir
+uma url localhost no navegador padrão do pc)
+
+Para obter a url do dashboard do minikube (mas também ocupa o terminal)
+-> minikube dashboard --url
+
+O deployment é uma parte fundamental do kubernetes, com ele criamos nossoserviço que
+vai rodar nos pods, nós definimos uma imagem e um nome para posteriormente ser
+replicado entre os servidores. A paritr da criação do deployment teremos containers
+rodando.
+
+O kubernetes não funciona com imagens locais, que estejam no pc. Para fazer a utilização
+do kubernetes, vc pode até criar a imagem no pc, mas vai ter que fazer o push para o
+hub do docker e utilizar de lá, assim como qualquer outra imagem que esteja lá, ou seja,
+só funciona com imagens do hub do docker. 
+
+Lembrando que para acessar o dockerhub -> docker login (coloca usuário e senha pelo
+terminal mesmo)
+
+Criação de um deployment 
+-> kubectl create deployment nome_que_vc_quer_chamar --image=imagem_dockerhub
+
+Para pegar os deployments -> kubectl get deployments
+
+Para mais detalhes sobre os deployments -> kubectl describe deployments
+
+Para pegar os pods -> kubectl get pods
+
+Para mais detalhes sobre os pods -> kubectl describe pods
+
+Verificação de como o kubernetes estã configurado -> kubectl config view
+Nesse caso, aparecerá informações do minikube que é o que estamos usando, mas poderia
+ser o rancher ou outro software que rode o kubernetes
+
