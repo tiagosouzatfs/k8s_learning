@@ -1,0 +1,141 @@
+Kubernetes - ferramenta de orquestração de containers criado pelo google
+permite a criação de múltiplos containers em diferentes máquinas (nodes)
+escalando projetos e formando clusters. Abreviação de kubernetes - k8s
+
+Conceitos fundamentais
+Control Plane: Gerenciador que controla os processos no nodes
+Nodes: Máquinas que são gerenciadas pelo Control Plane
+Deployment: Execução de uma imagem/projeto em um pod
+Pod: um ou mais conteiners que estão em um node
+Services: Serviços que expõe os Pods ao mundo externo
+kubectl: Cliente de linha de comando para o Kubernetes
+
+Documentação kubernetes - https://kubernetes.io/docs/home/
+
+versão do kubernetes -> kubectl version
+
+Documentação Minikube - https://minikube.sigs.k8s.io/docs/start/
+
+O Minikube é uma implementação leve do Kubernetes que cria uma 
+VM em sua máquina local e implanta um cluster simples contendo 
+apenas um nó.
+
+Versão minikube -> minikube version
+
+Inicializando o minikube -> minikube start --driver=docker
+o driver é o 'sistema de virtualização' será utilizado
+para criar o kluster kubernetes, ele pode ser o docker,
+virtualbox e hyperv.
+
+Para verificar se o minikube iniciou corretamente pode-se usar
+-> minikube status
+
+Parando o minikube -> minikube stop (obs: todas às vezes que 
+tivermos que reiniciar o pc, desligando e ligando novamente
+o sistema operacional, teremos que iniciar o minikube)
+
+O minikube tem uma ferramenta gráfica para gerência do kubernetes, com o
+comando -> minikube dashboard (ele ocupa o terminal para poder abrir
+uma url localhost no navegador padrão do pc)
+
+Para obter a url do dashboard do minikube (mas também ocupa o terminal)
+-> minikube dashboard --url
+
+O deployment é uma parte fundamental do kubernetes, com ele criamos nossoserviço que
+vai rodar nos pods, nós definimos uma imagem e um nome para posteriormente ser
+replicado entre os servidores. A paritr da criação do deployment teremos containers
+rodando.
+
+O kubernetes não funciona com imagens locais, que estejam no pc. Para fazer a utilização
+do kubernetes, vc pode até criar a imagem no pc, mas vai ter que fazer o push para o
+hub do docker e utilizar de lá, assim como qualquer outra imagem que esteja lá, ou seja,
+só funciona com imagens do hub do docker. 
+
+Lembrando que para acessar o dockerhub -> docker login (coloca usuário e senha pelo
+terminal mesmo)
+
+Criação de um deployment 
+-> kubectl create deployment nome_que_vc_quer_chamar --image=imagem_dockerhub
+
+Para pegar os deployments -> kubectl get deployments
+
+Para mais detalhes sobre os deployments -> kubectl describe deployments
+
+Para pegar os pods -> kubectl get pods
+
+Para mais detalhes sobre os pods -> kubectl describe pods
+
+Verificação de como o kubernetes estã configurado -> kubectl config view
+Nesse caso, aparecerá informações do minikube que é o que estamos usando, mas poderia
+ser o rancher ou outro software que rode o kubernetes
+
+Aplicações do kubernetes não tem conexão com o mundo externo, por isso precisamos criar
+um service, que é o que possibilita expor os pods. Service é uma entidade separada dos
+pods, que expõe eles a uma rede.
+
+Para criar um service e expor um pod 
+-> kubectl expose dployment nome_do_deployment --type=tipo_do_service --port=porta_do_container
+Há vários tipos de serviço, mas no curso usaremos o tipo loadbalancer, esse tipo orquestra e
+serve uma aplicação de modo que seja mais performática para o usuário.
+
+Quando utilizamos o comando para criar um service com o deployment, o nome do service, é o 
+nome do deployment.
+
+Como nossa aplicação está sendo gerenciada pelo minikube, vamos usá-lo para utilizar nossa
+aplicação no mundo real (navegador). -> minikube service nome_do_service
+Logo após, o minikube vai mostrar a forma de acesso.
+
+Gerenciar os services -> kubectl get services
+
+Gerenciar um serviço específico -> kubectl describe service/nome_do_serviço
+
+Escalando a aplicação/replicando os pods
+-> kubectl scale deployment/nome_do_deployment --replicas=número_de_réplicas
+Se aumentar o número de pods, a técnica chama scale up
+Se diminui o número de pods, a técnica chama scale down
+Você pode escolher aumentar ou diminuir o número de réplicas, sem problema nenhum,
+o comando é o mesmo.
+
+Conferindo o número de réplicas -> kubectl get rs
+
+Para atualizar uma imagem de um projeto, precisamos inicialmente ter outra versão da 
+imagem atual e atualizar com uma tag, nesse nosso caso no dockerhub, o comando é
+-> kubectl set image deployment/nome_do_deployment nome_do_container_manager=nova_image:tag
+Para esse caso, inicialmente, temos que fazer as alterações no projeto, em seguida dar 
+um build na nova imagem, dando tudo certo subir no dockerhub, só usar o comando acima
+e esperar os pods reiniciarem.
+
+Muito comum é de repente errar o nome da imagem ou alguma coisa que os pods parem de 
+funcionar depois de uma alteração. Podemos conferir com os comandos
+-> kubectl get pods
+-> kubectl rollout status deployment/nome_do_deployment
+e após identificar algum problema na atualização, podemos voltar para uma versão anterior
+com um deployment que funciona -> kubectl rollout undo deployment/nome_do_deployment_que_estava_antes_e_funciona
+
+Para deletar um service -> kubectl delete service nome_do_service
+Mas lembrando que a aplicação não ficará mais acessível externamente, afina de contas
+estaremos apagando o que faz expor a aplicação externamente e não conseguiremos mais acessar eles, 
+porém, o deployment e os pods continuaram funcionando normalmente.
+
+para deletar um deployment -> kubectl delete deployment nome_do_deployment
+Ao fazer isso, apagaremos o deployment e os pods pararão de funcionar e morrerão
+não restanto mas nada da aplicação para gerir.
+
+Modo imperativo -> quando iniciamos a aplicação com comandos kubernetes
+Modo declarativo -> guiado por um arquivo yaml, como se fosse o docker compose
+
+Chaves mais utilizadas na construção do arquivo yaml para o modo declarativo
+do kubernetes:
+apiVersion: versão utilizada da ferramenta
+kind: tipo do arquivo (deployment, service)
+metadata: descrever algum objeto, inserindo chaves como name
+replicas: número de réplicas de Nodes/Pods
+containers: definir as especificações de containers, como nome e imagem
+spec: especificações
+
+Executando arquivos no kubernetes .yaml -> kubectl apply -f nome_do_arquivo.yaml
+
+Parando arquivos no kubernetes .yaml -> kubectl delete -f nome_do_arquivo.yaml
+
+
+
